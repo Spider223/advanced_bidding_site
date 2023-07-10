@@ -14,6 +14,13 @@ export default function Header() {
           <Nav>
             <Nav.Link>
               <Link
+                to="/addProduct"
+                style={{ textDecoration: "none", color: "black" }}>
+                Add Product
+              </Link>
+            </Nav.Link>
+            <Nav.Link>
+              <Link
                 to="/login"
                 style={{ textDecoration: "none", color: "black" }}>
                 Login

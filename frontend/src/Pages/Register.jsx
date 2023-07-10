@@ -103,21 +103,6 @@ export default function Register() {
           <Form.Control placeholder="1234 Main St" />
         </Form.Group>
 
-        <Row className="mb-3">
-          <Form.Group as={Col} controlId="formGridCity">
-            <Form.Label>City</Form.Label>
-            <Form.Control />
-          </Form.Group>
-
-          <Form.Group as={Col} controlId="formGridState">
-            <Form.Label>State</Form.Label>
-            <Form.Select defaultValue="Choose...">
-              <option>Choose...</option>
-              <option>...</option>
-            </Form.Select>
-          </Form.Group>
-        </Row>
-
         <Button variant="primary" type="submit">
           Submit
         </Button>

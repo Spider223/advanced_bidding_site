@@ -1,6 +1,5 @@
 import React from "react";
-import Navbar from "../component/Navbar";
 
 export default function Home() {
-  return <Navbar />;
+  return <h1>hello from home</h1>;
 }
