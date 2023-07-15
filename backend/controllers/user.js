@@ -75,6 +75,7 @@ const Login = (req, res) => {
           {
             id: result._id,
             email: email,
+            username: result.username,
           },
           "RANDOM-TOKEN"
         );
@@ -99,4 +100,11 @@ const Login = (req, res) => {
     });
 };
 
-module.exports = { Register, validationSchemaForRegister, Login };
+const Profile = (req, res) => {
+  res.send({
+    message: "you are authorized to access.",
+    user: req.user,
+  });
+};
+
+module.exports = { Register, validationSchemaForRegister, Login, Profile };

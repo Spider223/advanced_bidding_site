@@ -26,7 +26,10 @@ export default function Login() {
       .post("http://localhost:8080/api/v1/user/login", data)
       .then((result) => {
         console.log(result);
-        alert("hello");
+        if (result.data.token) {
+          localStorage.setItem("token", result.data.token);
+          window.location.href = "/";
+        }
       })
       .catch((err) => {
         console.log(err);

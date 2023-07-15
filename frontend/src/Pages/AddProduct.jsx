@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Container, Form, Col, Row, Button } from "react-bootstrap";
 import axios from "axios";
+import io from "socket.io-client";
+
+const socket = io.connect("http://localhost:8080");
 
 export default function AddProduct() {
   const [productName, setProductName] = useState("");
@@ -10,23 +13,65 @@ export default function AddProduct() {
   const [category, setCategory] = useState("");
   const [file, setFile] = useState();
 
-  const handleSubmit = () => {
-    const data = {
-      productName,
-      description,
-      basePrice,
-      duration,
-      category,
+  //   console.log(file);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("productName", productName);
+    formData.append("description", description);
+    formData.append("basePrice", basePrice);
+    formData.append("duration", duration);
+    formData.append("category", category);
+    formData.append("file", file);
+
+    // const data = {
+    //   productName,
+    //   description,
+    //   basePrice,
+    //   duration,
+    //   category,
+    //   file,
+    // };
+    const token = localStorage.getItem("token");
+
+    const authorization = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     };
 
-    axios
-      .post("http://localhost:8080/api/v1/product/addProduct", data)
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((err) => {
-        console.log(err);
+    // await axios
+    //   .post(
+    //     "http://localhost:8080/api/v1/product/addProduct",
+    //     formData,
+    //     authorization
+    //   )
+    //   .then((result) => {
+    //     console.log(result);
+    //     window.location.href = "/";
+    //     socket.emit("addProduct", {
+    //       result: result.data,
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/product/addProduct",
+        formData,
+        authorization
+      );
+      console.log(response);
+      // console.log(response.data.result.username);
+      window.location.href = "/";
+      socket.emit("addProduct", {
+        result: response.data,
       });
+    } catch (error) {}
+
+    // alert("hello");
   };
 
   return (
@@ -46,6 +91,7 @@ export default function AddProduct() {
               name="productName"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
+              required
             />
           </Col>
         </Form.Group>
@@ -64,6 +110,7 @@ export default function AddProduct() {
               name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              required
             />
           </Col>
         </Form.Group>
@@ -77,11 +124,13 @@ export default function AddProduct() {
           </Form.Label>
           <Col sm={10}>
             <Form.Control
-              type="text"
+              type="number"
+              pattern="[0-9]*"
               placeholder="Base Price"
               name="basePrice"
               value={basePrice}
               onChange={(e) => setBasePrice(e.target.value)}
+              required
             />
           </Col>
         </Form.Group>
@@ -95,11 +144,13 @@ export default function AddProduct() {
           </Form.Label>
           <Col sm={10}>
             <Form.Control
-              type="text"
+              type="number"
+              pattern="[0-9]*"
               placeholder="Duration in sec"
               name="duration"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
+              required
             />
           </Col>
         </Form.Group>
@@ -118,6 +169,7 @@ export default function AddProduct() {
               name="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              required
             />
           </Col>
         </Form.Group>
@@ -129,7 +181,6 @@ export default function AddProduct() {
           <Col sm={10}>
             <Form.Control
               type="file"
-              value={file}
               onChange={(e) => setFile(e.target.files[0])}
             />
           </Col>
