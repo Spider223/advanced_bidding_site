@@ -18,6 +18,9 @@ const productSchema = new mongoose.Schema(
     currentPrice: {
       type: String,
     },
+    lastBidder: {
+      type: String,
+    },
     duration: {
       type: String,
       required: true,

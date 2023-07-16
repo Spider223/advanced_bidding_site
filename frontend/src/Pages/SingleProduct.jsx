@@ -13,6 +13,8 @@ export default function SingleProduct() {
   const [singleProduct, setSingleProduct] = useState([]);
   const [userInput, setUserInput] = useState();
   const [info, setInfo] = useState("");
+  const [currentBidder, setCurrentBidder] = useState("");
+  const [currentPrice, setCurrentPrice] = useState("");
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -61,11 +63,22 @@ export default function SingleProduct() {
         userInput,
         last_bidder: singleProduct.username.username,
         info,
+        id: singleProduct._id,
       });
+      setError(false);
     } else {
       setError(true);
     }
   };
+
+  useEffect(() => {
+    socket.on("updatedProduct", (data) => {
+      const { currentPrice, lastBidder } = data;
+      console.log(data);
+      setCurrentBidder(lastBidder);
+      setCurrentPrice(currentPrice);
+    });
+  }, []);
 
   return (
     <Container style={{ marginTop: "3rem" }}>
@@ -87,8 +100,8 @@ export default function SingleProduct() {
           <hr />
           <h3>Auction</h3>
           <h6>Time Remaining : </h6>
-          <h6>Current Price : </h6>
-          <h6>Current Bidder : </h6>
+          <h6>Current Price : {currentPrice} </h6>
+          <h6>Current Bidder :{currentBidder} </h6>
           <hr />
           <div style={{ gap: "4px" }}>
             <form onSubmit={placeBid}>

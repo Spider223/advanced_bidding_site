@@ -33,6 +33,18 @@ socketIO.on("connection", (socket) => {
 
   socket.on("bidProduct", (data) => {
     console.log(data);
+    const { userInput, last_bidder, info, id } = data;
+
+    Product.findByIdAndUpdate(
+      id,
+      { currentPrice: userInput, lastBidder: info },
+      { new: true }
+    )
+      .then((result) => {
+        socket.broadcast.emit("updatedProduct", result);
+        console.log(result);
+      })
+      .catch((err) => console.log(err));
   });
 });
 
