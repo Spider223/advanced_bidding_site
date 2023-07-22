@@ -28,6 +28,14 @@ const productSchema = new mongoose.Schema(
     remainingTime: {
       type: Number,
     },
+    auctionStarted: {
+      type: Boolean,
+      default: false,
+    },
+    auctionEnded: {
+      type: Boolean,
+      default: false,
+    },
     category: {
       type: String,
       required: true,
