@@ -25,6 +25,9 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    remainingTime: {
+      type: Number,
+    },
     category: {
       type: String,
       required: true,

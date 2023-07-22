@@ -7,8 +7,11 @@ const cors = require("cors");
 const user = require("./routes/user");
 const product = require("./routes/product");
 const Product = require("./model/Product");
+// const Auction = require("./model/Auction");
 
-const port = process.env.PORT;
+const port = process.env.PORT || 8080;
+
+app.use(express.json());
 
 const http = require("http").Server(app);
 
@@ -28,31 +31,52 @@ socketIO.on("connection", (socket) => {
 
   socket.on("addProduct", (data) => {
     console.log(data);
-    socket.broadcast.emit("addProductResponse", data);
+    // console.log(data.result.username);
+    socketIO.emit("addProductResponse", data);
   });
-
-  socket.on("bidProduct", (data) => {
+  socket.on("start-bid", (data) => {
+    socketIO.emit("starting", data);
+  });
+  socket.on("bidProduct", async (data) => {
     console.log(data);
-    const { userInput, last_bidder, info, id } = data;
+    const { userInput, last_bidder, info, id, duration } = data;
+
+    let product = await Product.findById(id);
+    product.remainingTime = product.duration;
+    let durations = product.duration;
+    let timer = product.remainingTime;
+    let intervalTimer = setInterval(async () => {
+      timer -= 1;
+      if (timer <= 0) {
+        return 0;
+      }
+      await product.updateOne({ remainingTime: timer }).then((result) => {
+        socketIO.emit("timer", result);
+      });
+    }, 1000);
+
+    // await product.updateOne({ remainingTime: name });
+
+    setTimeout(async () => {
+      clearInterval(intervalTimer);
+    }, (durations + 1) * 1000);
 
     Product.findByIdAndUpdate(
       id,
-      { currentPrice: userInput, lastBidder: info },
+      {
+        currentPrice: userInput,
+        lastBidder: info,
+      },
       { new: true }
     )
       .then((result) => {
-        socket.broadcast.emit("updatedProduct", result);
+        socketIO.emit("updatedProduct", result);
         console.log(result);
       })
       .catch((err) => console.log(err));
   });
 });
 
-app.get("/", (req, res) => {
-  res.send("hello world");
-});
-
-app.use(express.json());
 app.use("/api/v1/user", user);
 app.use("/api/v1/product", product);
 

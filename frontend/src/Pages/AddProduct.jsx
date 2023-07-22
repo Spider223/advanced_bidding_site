@@ -160,6 +160,46 @@ export default function AddProduct() {
           className="mb-3"
           controlId="formHorizontalProductDescription">
           <Form.Label column sm={2}>
+            Duration
+          </Form.Label>
+          <Col sm={10}>
+            <Form.Control
+              type="number"
+              pattern="[0-9]*"
+              placeholder="Duration in sec"
+              name="duration"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              required
+            />
+          </Col>
+        </Form.Group>
+
+        <Form.Group
+          as={Row}
+          className="mb-3"
+          controlId="formHorizontalProductDescription">
+          <Form.Label column sm={2}>
+            Duration
+          </Form.Label>
+          <Col sm={10}>
+            <Form.Control
+              type="number"
+              pattern="[0-9]*"
+              placeholder="Duration in sec"
+              name="duration"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              required
+            />
+          </Col>
+        </Form.Group>
+
+        <Form.Group
+          as={Row}
+          className="mb-3"
+          controlId="formHorizontalProductDescription">
+          <Form.Label column sm={2}>
             Category
           </Form.Label>
           <Col sm={10}>

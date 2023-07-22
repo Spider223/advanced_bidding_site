@@ -39,10 +39,12 @@ export default function Header() {
       setNotification(
         `@${info} just added a new product ${data.result.productName}`
       );
+      // console.log(info);
       console.log(data);
     });
-  }, [socket]);
+  }, []);
 
+  console.log("info", info);
   const logout = () => {
     localStorage.removeItem("token");
     window.location.href = "/";
