@@ -32,14 +32,35 @@ socketIO.on("connection", (socket) => {
 
   socket.on("addProduct", (data) => {
     console.log(data);
-    // console.log(data.result.username);
     socketIO.emit("addProductResponse", data);
   });
-  socket.on("start-bid", (data) => {
-    socketIO.emit("starting", data);
+  //  socket.on("bit-paced", ({bidder, price}) => {
+  //   socketIO.emit("watch-bid", {bidder, price});
+  // });
+  socket.on("start-bid", ({ id }) => {
+    Product.findByIdAndUpdate(
+      { _id: id },
+      { $inc: { remainingTime: -1 } },
+      { new: true }
+    )
+      .then((data) => {
+        if (data && data.remainingTime < 0) {
+          data.remainingTime = 0;
+          return data.save();
+        }
+        console.log("🚀 ~ file: index.js:43 ~ .1st ~ data:", data.remainingTime);
+        return data;  
+      })
+      .then((data) => {
+         console.log(
+           "🚀 ~ file: index.js:43 ~ .2nd ~ data:",
+           data.remainingTime
+         );
+        socketIO.emit("starting", data.remainingTime);
+      })
+      .catch((error) => console.log(error.message));
   });
   socket.on("bidProduct", async (data) => {
-    console.log(data);
     const { userInput, last_bidder, info, id, duration } = data;
 
     let product = await Product.findById(id);

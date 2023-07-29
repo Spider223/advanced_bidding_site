@@ -22,21 +22,22 @@ export default function SingleProduct() {
   const [currentPrice, setCurrentPrice] = useState("");
   const [basePriceError, setBasePriceError] = useState(false);
   const [currentPriceError, setCurrentPriceError] = useState(false);
-  const [startBiding, setStartBiding] = useState(false);
-  const [timeUp, setTimeUp] = useState(10); // duration
+
+  const [remainingTime, setRemainingTime] = useState("");
+  const [bidStarted, setBidStarted] = useState(false);
+
   useEffect(() => {
     axios
       .get(`http://localhost:5000/api/v1/product/singlePost/${id}`)
       .then((result) => {
         setSingleProduct(result.data.singleProduct[0]);
-        socket.emit("singleProduct", {
-          productName: result.data.singleProduct[0].productName,
-        });
+        Number(setRemainingTime(result.data.singleProduct[0].remainingTime));
+        setBidStarted(result.data?.singleProduct[0]?.auctionStarted);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [id]);
+  }, []);
 
   const token = localStorage.getItem("token");
 
@@ -59,22 +60,48 @@ export default function SingleProduct() {
       });
   }, [setUser, token]);
 
-  const placeBid = (e) => {
+  const placeBid = async (e) => {
     e.preventDefault();
-
     if (
       userInput > Number(singleProduct.basePrice) &&
       userInput > Number(currentPrice)
     ) {
-      socket.emit("bidProduct", {
-        userInput,
-        last_bidder: singleProduct.username.username,
-        info,
-        duration: singleProduct.duration,
-        id: singleProduct._id,
-      });
-      setBasePriceError(false);
-      setCurrentPriceError(false);
+      const res = await axios.post(
+        `http://localhost:8080/api/v1/product/place-bid/${id}`,
+
+        {
+          bidder: info,
+          price: userInput,
+        }
+      );
+      if (res.data.status === 200) {
+        // socket.emit("bit-paced", {
+        //   bidder: res.data.product.lastBidder,
+        //   price: res.data.product.currentPrice,
+        // });
+        setInterval(() => {
+          if (bidStarted)
+            axios
+              .get(`http://localhost:8080/api/v1/product/singlePost/${id}`)
+              .then((result) => {
+                setCurrentBidder(result.data.singleProduct[0].lastBidder);
+                setCurrentPrice(result.data.singleProduct[0].currentPrice);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+        }, 1000);
+      }
+
+      // socket.emit("bidProduct", {
+      //   userInput,
+      //   last_bidder: singleProduct.username.username,
+      //   info,
+      //   duration: singleProduct.duration,
+      //   id: singleProduct._id,
+      // });
+      // setBasePriceError(false);
+      // setCurrentPriceError(false);
     }
     if (userInput < Number(singleProduct.basePrice)) {
       setBasePriceError(true);
@@ -90,24 +117,36 @@ export default function SingleProduct() {
       setCurrentPrice(currentPrice);
     });
   }, []);
-  const startBid = () => {
-    // socket.emit("start-bid", true);
-  };
-  useEffect(() => {
-    socket.on("starting", (data) => {
-      setStartBiding(data);
-    });
-  }, [setStartBiding]);
-  useEffect(() => {
-    if (startBiding) {
+
+  const startBid = async (e) => {
+    e.preventDefault();
+    const res = await axios.get(
+      `http://localhost:8080/api/v1/product/start-bid/${id}`
+    );
+    if (res.data.status === 200) {
+      setBidStarted(true);
       let intervalTimer = setInterval(async () => {
-        setTimeUp((prev) => (prev <= 0 ? 0 : prev - 1));
+        socket.emit("start-bid", { id });
       }, 1000);
       setTimeout(() => {
         clearInterval(intervalTimer);
-      }, 120000); // duration*1000
+      }, 120000);
     }
-  }, [startBiding]);
+  };
+  useEffect(() => {
+    if (bidStarted)
+      socket.on("starting", (data) => {
+        Number(setRemainingTime(data));
+      });
+  }, [bidStarted]);
+
+  // useEffect(() => {
+  //   if (bidStarted)
+  //     socket.on("watch-bid", ({ bidder, price }) => {
+  //       setCurrentBidder(bidder);
+  //       setCurrentPrice(price);
+  //     });
+  // }, [setCurrentBidder, setCurrentPrice, bidStarted]);
 
   return (
     <Container style={{ marginTop: "3rem" }}>
@@ -128,12 +167,15 @@ export default function SingleProduct() {
           <h6>Base Price: Rs. {singleProduct.basePrice}</h6>
           <hr />
           <h3>Auction</h3>
-          <h6>Time Remaining : {timeUp <= 0 ? "Bidding ended" : timeUp} </h6>
+          <h6>
+            Time Remaining :{" "}
+            {remainingTime <= 0 ? "Auction ended" : remainingTime}
+          </h6>
           <h6>Current Price : {currentPrice} </h6>
           <h6>Current Bidder :{currentBidder} </h6>
           <hr />
           <div style={{ gap: "4px" }}>
-            <form onSubmit={placeBid}>
+            <form>
               {basePriceError ? (
                 <p style={{ color: "red" }}>
                   The bidding amount must be greater than{" "}
@@ -154,18 +196,18 @@ export default function SingleProduct() {
 
               {/* <Timer duration={singleProduct?.duration} /> */}
               {user === singleProduct.username?.username ? (
-                <button type="submit" onClick={() => startBid()}>
-                  Start bid
-                </button>
+                <>
+                  {remainingTime <= 0 ? (
+                    <button disabled>Start bid</button>
+                  ) : (
+                    <button onClick={(e) => startBid(e)}>Start bid</button>
+                  )}
+                </>
               ) : (
                 <>
-                  {timeUp <= 0 ? (
+                  {remainingTime <= 0 || !bidStarted ? (
                     <>
-                      <input
-                        placeholder="$"
-                        type="number"
-                        disabled
-                      />
+                      <input placeholder="$" type="number" disabled />
                       <button type="submit" disabled>
                         Place bid
                       </button>
@@ -178,7 +220,9 @@ export default function SingleProduct() {
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
                       />
-                      <button type="submit">Place bid</button>
+                      <button type="submit" onClick={(e) => placeBid(e)}>
+                        Place bid
+                      </button>
                     </>
                   )}
                 </>

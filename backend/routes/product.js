@@ -8,6 +8,8 @@ const {
   addProduct,
   getProduct,
   getSingleProduct,
+  startBid,
+  placeBid
 } = require("../controllers/product");
 
 const auth = require("../middleware/auth");
@@ -19,5 +21,7 @@ router
 router.route("/getProduct").get(getProduct);
 
 router.route("/singlePost/:id").get(getSingleProduct);
+router.route("/start-bid/:id").get(startBid);
+router.route("/place-bid/:id").post(placeBid);
 
 module.exports = router;
