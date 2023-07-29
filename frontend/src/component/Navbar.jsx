@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -26,25 +26,21 @@ export default function Header() {
 
     axios(configuration)
       .then((result) => {
-        console.log(result);
         setInfo(result.data.user.username);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [token, setInfo]);
 
   useEffect(() => {
     socket.on("addProductResponse", (data) => {
       setNotification(
         `@${info} just added a new product ${data.result.productName}`
       );
-      // console.log(info);
-      console.log(data);
     });
-  }, []);
+  }, [info]);
 
-  console.log("info", info);
   const logout = () => {
     localStorage.removeItem("token");
     window.location.href = "/";
