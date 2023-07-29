@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Container } from "react-bootstrap";
@@ -23,9 +23,8 @@ export default function Login() {
     };
 
     axios
-      .post("http://localhost:8080/api/v1/user/login", data)
+      .post("http://localhost:5000/api/v1/user/login", data)
       .then((result) => {
-        console.log(result);
         if (result.data.token) {
           localStorage.setItem("token", result.data.token);
           window.location.href = "/";

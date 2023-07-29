@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
@@ -6,7 +6,8 @@ import moment from "moment";
 import io from "socket.io-client";
 // import Timer from "../component/Timer";
 import { useAuthStore } from "./store";
-const socket = io.connect("http://localhost:8080");
+const socket = io.connect("http://localhost:5000");
+// const socket = io.connect("http://localhost:8080");
 
 export default function SingleProduct() {
   const { id } = useParams();
@@ -25,9 +26,8 @@ export default function SingleProduct() {
   const [timeUp, setTimeUp] = useState(10); // duration
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/api/v1/product/singlePost/${id}`)
+      .get(`http://localhost:5000/api/v1/product/singlePost/${id}`)
       .then((result) => {
-        console.log(result.data.singleProduct);
         setSingleProduct(result.data.singleProduct[0]);
         socket.emit("singleProduct", {
           productName: result.data.singleProduct[0].productName,
@@ -36,14 +36,14 @@ export default function SingleProduct() {
       .catch((err) => {
         console.log(err);
       });
-  }, [socket]);
+  }, [id]);
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const configuration = {
       method: "get",
-      url: "http://localhost:8080/api/v1/user/profile",
+      url: "http://localhost:5000/api/v1/user/profile",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -57,12 +57,10 @@ export default function SingleProduct() {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [setUser, token]);
 
   const placeBid = (e) => {
     e.preventDefault();
-    console.log(userInput);
-    console.log(singleProduct.basePrice);
 
     if (
       userInput > Number(singleProduct.basePrice) &&
@@ -93,7 +91,7 @@ export default function SingleProduct() {
     });
   }, []);
   const startBid = () => {
-    socket.emit("start-bid", true);
+    // socket.emit("start-bid", true);
   };
   useEffect(() => {
     socket.on("starting", (data) => {
@@ -116,8 +114,8 @@ export default function SingleProduct() {
       <Row>
         <Col md={6}>
           <img
-            src={"http://localhost:8080/" + singleProduct.cover}
-            style={{ height: "100%", width: "100%", marginTop: "1rem" }}
+            src={"http://localhost:5000/" + singleProduct.cover}
+            style={{ height: "25em", width: "25em", marginTop: "1rem", objectFit:"cover" }}
           />
         </Col>
         <Col md={6}>
@@ -166,9 +164,7 @@ export default function SingleProduct() {
                       <input
                         placeholder="$"
                         type="number"
-                        value={userInput}
                         disabled
-                        onChange={(e) => setUserInput(e.target.value)}
                       />
                       <button type="submit" disabled>
                         Place bid

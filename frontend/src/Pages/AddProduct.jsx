@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Container, Form, Col, Row, Button } from "react-bootstrap";
 import axios from "axios";
 import io from "socket.io-client";
 
-const socket = io.connect("http://localhost:8080");
+const socket = io.connect("http://localhost:5000");
+// const socket = io.connect("http://localhost:8080");
 
 export default function AddProduct() {
   const [productName, setProductName] = useState("");
@@ -13,7 +14,6 @@ export default function AddProduct() {
   const [category, setCategory] = useState("");
   const [file, setFile] = useState();
 
-  //   console.log(file);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -47,7 +47,6 @@ export default function AddProduct() {
     //     authorization
     //   )
     //   .then((result) => {
-    //     console.log(result);
     //     window.location.href = "/";
     //     socket.emit("addProduct", {
     //       result: result.data,
@@ -59,17 +58,18 @@ export default function AddProduct() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/product/addProduct",
+        "http://localhost:5000/api/v1/product/addProduct",
         formData,
         authorization
       );
       console.log(response);
-      // console.log(response.data.result.username);
       window.location.href = "/";
       socket.emit("addProduct", {
         result: response.data,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
 
     // alert("hello");
   };

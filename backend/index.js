@@ -9,7 +9,7 @@ const product = require("./routes/product");
 const Product = require("./model/Product");
 // const Auction = require("./model/Auction");
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 5000;
 
 app.use(express.json());
 
@@ -17,7 +17,8 @@ const http = require("http").Server(app);
 
 const socketIO = require("socket.io")(http, {
   cors: {
-    origin: "http://localhost:3000",
+    origin:["http://127.0.0.1:3000", "http://localhost:3000"],
+    // origin: "http://localhost:3000",
   },
 });
 

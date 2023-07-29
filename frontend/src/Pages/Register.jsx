@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import axios from "axios";
 
@@ -25,7 +25,7 @@ export default function Register() {
     };
 
     axios
-      .post("http://localhost:8080/api/v1/user/register", data)
+      .post("http://localhost:5000/api/v1/user/register", data)
       .then((result) => {
         console.log(result);
       })
