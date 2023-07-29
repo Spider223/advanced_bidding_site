@@ -23,7 +23,7 @@ export default function Login() {
     };
 
     axios
-      .post("http://localhost:5000/api/v1/user/login", data)
+      .post("http://localhost:8080/api/v1/user/login", data)
       .then((result) => {
         if (result.data.token) {
           localStorage.setItem("token", result.data.token);

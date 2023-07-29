@@ -7,8 +7,7 @@ import axios from "axios";
 
 import io from "socket.io-client";
 
-const socket = io.connect("http://localhost:3000");
-// const socket = io.connect("http://localhost:8080");
+const socket = io.connect("http://localhost:8080");
 
 export default function Header() {
   const [info, setInfo] = useState("");

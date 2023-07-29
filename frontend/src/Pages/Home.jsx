@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/v1/product/getProduct")
+      .get("http://localhost:8080/api/v1/product/getProduct")
       .then((result) => {
         setAllProduct(result.data.getproduct);
       })

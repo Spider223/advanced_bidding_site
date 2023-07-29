@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
@@ -6,8 +6,7 @@ import moment from "moment";
 import io from "socket.io-client";
 // import Timer from "../component/Timer";
 import { useAuthStore } from "./store";
-const socket = io.connect("http://localhost:5000");
-// const socket = io.connect("http://localhost:8080");
+const socket = io.connect("http://localhost:8080");
 
 export default function SingleProduct() {
   const { id } = useParams();
@@ -16,7 +15,7 @@ export default function SingleProduct() {
   const user = useAuthStore((state) => state.user);
 
   const [singleProduct, setSingleProduct] = useState([]);
-  const [userInput, setUserInput] = useState();
+  const [userInput, setUserInput] = useState("");
   const [info, setInfo] = useState("");
   const [currentBidder, setCurrentBidder] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
@@ -28,23 +27,25 @@ export default function SingleProduct() {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/v1/product/singlePost/${id}`)
+      .get(`http://localhost:8080/api/v1/product/singlePost/${id}`)
       .then((result) => {
         setSingleProduct(result.data.singleProduct[0]);
         Number(setRemainingTime(result.data.singleProduct[0].remainingTime));
         setBidStarted(result.data?.singleProduct[0]?.auctionStarted);
+        setCurrentBidder(result.data?.singleProduct[0]?.lastBidder);
+        setCurrentPrice(result.data?.singleProduct[0]?.currentPrice);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [setSingleProduct, setBidStarted, id]);
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const configuration = {
       method: "get",
-      url: "http://localhost:5000/api/v1/user/profile",
+      url: "http://localhost:8080/api/v1/user/profile",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -66,42 +67,11 @@ export default function SingleProduct() {
       userInput > Number(singleProduct.basePrice) &&
       userInput > Number(currentPrice)
     ) {
-      const res = await axios.post(
-        `http://localhost:8080/api/v1/product/place-bid/${id}`,
-
-        {
-          bidder: info,
-          price: userInput,
-        }
-      );
-      if (res.data.status === 200) {
-        // socket.emit("bit-paced", {
-        //   bidder: res.data.product.lastBidder,
-        //   price: res.data.product.currentPrice,
-        // });
-        setInterval(() => {
-          if (bidStarted)
-            axios
-              .get(`http://localhost:8080/api/v1/product/singlePost/${id}`)
-              .then((result) => {
-                setCurrentBidder(result.data.singleProduct[0].lastBidder);
-                setCurrentPrice(result.data.singleProduct[0].currentPrice);
-              })
-              .catch((err) => {
-                console.log(err);
-              });
-        }, 1000);
-      }
-
-      // socket.emit("bidProduct", {
-      //   userInput,
-      //   last_bidder: singleProduct.username.username,
-      //   info,
-      //   duration: singleProduct.duration,
-      //   id: singleProduct._id,
-      // });
-      // setBasePriceError(false);
-      // setCurrentPriceError(false);
+      socket.emit("bit-paced", {
+        bidder: info,
+        price: userInput,
+        id,
+      });
     }
     if (userInput < Number(singleProduct.basePrice)) {
       setBasePriceError(true);
@@ -109,14 +79,6 @@ export default function SingleProduct() {
       setCurrentPriceError(true);
     }
   };
-
-  useEffect(() => {
-    socket.on("updatedProduct", (data) => {
-      const { currentPrice, lastBidder } = data;
-      setCurrentBidder(lastBidder);
-      setCurrentPrice(currentPrice);
-    });
-  }, []);
 
   const startBid = async (e) => {
     e.preventDefault();
@@ -140,21 +102,35 @@ export default function SingleProduct() {
       });
   }, [bidStarted]);
 
-  // useEffect(() => {
-  //   if (bidStarted)
-  //     socket.on("watch-bid", ({ bidder, price }) => {
-  //       setCurrentBidder(bidder);
-  //       setCurrentPrice(price);
-  //     });
-  // }, [setCurrentBidder, setCurrentPrice, bidStarted]);
-
+  useEffect(() => {
+    const bidInterval = setInterval(async () => {
+      if (bidStarted)
+        axios
+          .get(`http://localhost:8080/api/v1/product/singlePost/${id}`)
+          .then((result) => {
+            setCurrentBidder(result.data?.singleProduct[0]?.lastBidder);
+            setCurrentPrice(result.data?.singleProduct[0]?.currentPrice);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+    }, 1000);
+    setTimeout(() => {
+      clearInterval(bidInterval);
+    }, 120000);
+  }, [bidStarted, id]);
   return (
     <Container style={{ marginTop: "3rem" }}>
       <Row>
         <Col md={6}>
           <img
-            src={"http://localhost:5000/" + singleProduct.cover}
-            style={{ height: "25em", width: "25em", marginTop: "1rem", objectFit:"cover" }}
+            src={"http://localhost:8080/" + singleProduct.cover}
+            style={{
+              height: "25em",
+              width: "25em",
+              marginTop: "1rem",
+              objectFit: "cover",
+            }}
           />
         </Col>
         <Col md={6}>
@@ -205,7 +181,7 @@ export default function SingleProduct() {
                 </>
               ) : (
                 <>
-                  {remainingTime <= 0 || !bidStarted ? (
+                  {/* {remainingTime <= 0 || !bidStarted ? (
                     <>
                       <input placeholder="$" type="number" disabled />
                       <button type="submit" disabled>
@@ -224,7 +200,16 @@ export default function SingleProduct() {
                         Place bid
                       </button>
                     </>
-                  )}
+                  )} */}
+                  <input
+                    placeholder="$"
+                    type="number"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                  />
+                  <button type="submit" onClick={(e) => placeBid(e)}>
+                    Place bid
+                  </button>
                 </>
               )}
             </form>

@@ -3,8 +3,7 @@ import { Container, Form, Col, Row, Button } from "react-bootstrap";
 import axios from "axios";
 import io from "socket.io-client";
 
-const socket = io.connect("http://localhost:5000");
-// const socket = io.connect("http://localhost:8080");
+const socket = io.connect("http://localhost:8080");
 
 export default function AddProduct() {
   const [productName, setProductName] = useState("");
@@ -55,11 +54,11 @@ export default function AddProduct() {
     //   .catch((err) => {
     //     console.log(err);
     //   });
-
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v1/product/addProduct",
+        "http://localhost:8080/api/v1/product/addProduct",
         formData,
+
         authorization
       );
       console.log(response);
@@ -80,7 +79,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductName">
+          controlId="formHorizontalProductName"
+        >
           <Form.Label column sm={2}>
             ProductName
           </Form.Label>
@@ -99,7 +99,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="exampleForm.ControlTextarea1">
+          controlId="exampleForm.ControlTextarea1"
+        >
           <Form.Label column sm={2}>
             Description
           </Form.Label>
@@ -118,7 +119,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductDescription">
+          controlId="formHorizontalProductDescription"
+        >
           <Form.Label column sm={2}>
             Base Price
           </Form.Label>
@@ -138,7 +140,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductDescription">
+          controlId="formHorizontalProductDescription"
+        >
           <Form.Label column sm={2}>
             Duration
           </Form.Label>
@@ -154,51 +157,11 @@ export default function AddProduct() {
             />
           </Col>
         </Form.Group>
-
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductDescription">
-          <Form.Label column sm={2}>
-            Duration
-          </Form.Label>
-          <Col sm={10}>
-            <Form.Control
-              type="number"
-              pattern="[0-9]*"
-              placeholder="Duration in sec"
-              name="duration"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              required
-            />
-          </Col>
-        </Form.Group>
-
-        <Form.Group
-          as={Row}
-          className="mb-3"
-          controlId="formHorizontalProductDescription">
-          <Form.Label column sm={2}>
-            Duration
-          </Form.Label>
-          <Col sm={10}>
-            <Form.Control
-              type="number"
-              pattern="[0-9]*"
-              placeholder="Duration in sec"
-              name="duration"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              required
-            />
-          </Col>
-        </Form.Group>
-
-        <Form.Group
-          as={Row}
-          className="mb-3"
-          controlId="formHorizontalProductDescription">
+          controlId="formHorizontalProductDescription"
+        >
           <Form.Label column sm={2}>
             Category
           </Form.Label>
