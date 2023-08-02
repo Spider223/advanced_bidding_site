@@ -12,12 +12,14 @@ const Product = require("./model/Product");
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(__dirname + "/uploads"));
 
 const http = require("http").Server(app);
 
 const socketIO = require("socket.io")(http, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: ["http://127.0.0.1:3000", "http://localhost:3000"], // accepts two origins
   },
 });
 
@@ -30,12 +32,26 @@ socketIO.on("connection", (socket) => {
   });
 
   socket.on("addProduct", (data) => {
-    console.log(data);
     socketIO.emit("addProductResponse", data);
   });
-  //  socket.on("bit-paced", ({bidder, price}) => {
-  //   socketIO.emit("watch-bid", {bidder, price});
-  // });
+  socket.on("bit-paced", ({ bidder, price, id }) => {
+    Product.findByIdAndUpdate(
+      { _id: id },
+      { $set: { lastBidder: bidder, currentPrice: price } },
+      { new: true }
+    )
+      .then((data) => {
+        console.log(data);
+        if (data)
+          socket.emit("bit-placed", {
+            bidder: data.lastBidder,
+            price: data.currentPrice,
+          });
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+  });
   socket.on("start-bid", ({ id }) => {
     Product.findByIdAndUpdate(
       { _id: id },
@@ -47,14 +63,9 @@ socketIO.on("connection", (socket) => {
           data.remainingTime = 0;
           return data.save();
         }
-        console.log("🚀 ~ file: index.js:43 ~ .1st ~ data:", data.remainingTime);
-        return data;  
+        return data;
       })
       .then((data) => {
-         console.log(
-           "🚀 ~ file: index.js:43 ~ .2nd ~ data:",
-           data.remainingTime
-         );
         socketIO.emit("starting", data.remainingTime);
       })
       .catch((error) => console.log(error.message));
@@ -100,8 +111,6 @@ socketIO.on("connection", (socket) => {
 
 app.use("/api/v1/user", user);
 app.use("/api/v1/product", product);
-
-app.use("/uploads", express.static(__dirname + "/uploads"));
 
 dbConnect;
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Container, Form, Col, Row, Button } from "react-bootstrap";
 import axios from "axios";
 import io from "socket.io-client";
@@ -13,7 +13,6 @@ export default function AddProduct() {
   const [category, setCategory] = useState("");
   const [file, setFile] = useState();
 
-  //   console.log(file);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -47,7 +46,6 @@ export default function AddProduct() {
     //     authorization
     //   )
     //   .then((result) => {
-    //     console.log(result);
     //     window.location.href = "/";
     //     socket.emit("addProduct", {
     //       result: result.data,
@@ -56,20 +54,19 @@ export default function AddProduct() {
     //   .catch((err) => {
     //     console.log(err);
     //   });
-
     try {
       const response = await axios.post(
         "http://localhost:8080/api/v1/product/addProduct",
         formData,
         authorization
       );
-      console.log(response);
-      // console.log(response.data.result.username);
       window.location.href = "/";
       socket.emit("addProduct", {
         result: response.data,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
 
     // alert("hello");
   };
@@ -80,7 +77,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductName">
+          controlId="formHorizontalProductName"
+        >
           <Form.Label column sm={2}>
             ProductName
           </Form.Label>
@@ -99,7 +97,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="exampleForm.ControlTextarea1">
+          controlId="exampleForm.ControlTextarea1"
+        >
           <Form.Label column sm={2}>
             Description
           </Form.Label>
@@ -118,7 +117,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductDescription">
+          controlId="formHorizontalProductDescription"
+        >
           <Form.Label column sm={2}>
             Base Price
           </Form.Label>
@@ -138,7 +138,8 @@ export default function AddProduct() {
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductDescription">
+          controlId="formHorizontalProductDescription"
+        >
           <Form.Label column sm={2}>
             Duration
           </Form.Label>
@@ -154,11 +155,11 @@ export default function AddProduct() {
             />
           </Col>
         </Form.Group>
-
         <Form.Group
           as={Row}
           className="mb-3"
-          controlId="formHorizontalProductDescription">
+          controlId="formHorizontalProductDescription"
+        >
           <Form.Label column sm={2}>
             Category
           </Form.Label>

@@ -9,7 +9,7 @@ const {
   getProduct,
   getSingleProduct,
   startBid,
-  placeBid
+  placeBid,
 } = require("../controllers/product");
 
 const auth = require("../middleware/auth");

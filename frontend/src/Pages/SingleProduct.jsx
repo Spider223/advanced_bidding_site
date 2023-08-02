@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
@@ -15,7 +15,7 @@ export default function SingleProduct() {
   const user = useAuthStore((state) => state.user);
 
   const [singleProduct, setSingleProduct] = useState([]);
-  const [userInput, setUserInput] = useState();
+  const [userInput, setUserInput] = useState("");
   const [info, setInfo] = useState("");
   const [currentBidder, setCurrentBidder] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
@@ -32,11 +32,13 @@ export default function SingleProduct() {
         setSingleProduct(result.data.singleProduct[0]);
         Number(setRemainingTime(result.data.singleProduct[0].remainingTime));
         setBidStarted(result.data?.singleProduct[0]?.auctionStarted);
+        setCurrentBidder(result.data?.singleProduct[0]?.lastBidder);
+        setCurrentPrice(result.data?.singleProduct[0]?.currentPrice);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [setSingleProduct, setBidStarted, id]);
 
   const token = localStorage.getItem("token");
 
@@ -57,65 +59,26 @@ export default function SingleProduct() {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [setUser, token]);
 
   const placeBid = async (e) => {
     e.preventDefault();
-    if (
-      userInput > Number(singleProduct.basePrice) &&
-      userInput > Number(currentPrice)
-    ) {
-      const res = await axios.post(
-        `http://localhost:8080/api/v1/product/place-bid/${id}`,
-
-        {
-          bidder: info,
-          price: userInput,
-        }
-      );
-      if (res.data.status === 200) {
-        // socket.emit("bit-paced", {
-        //   bidder: res.data.product.lastBidder,
-        //   price: res.data.product.currentPrice,
-        // });
-        setInterval(() => {
-          if (bidStarted)
-            axios
-              .get(`http://localhost:8080/api/v1/product/singlePost/${id}`)
-              .then((result) => {
-                setCurrentBidder(result.data.singleProduct[0].lastBidder);
-                setCurrentPrice(result.data.singleProduct[0].currentPrice);
-              })
-              .catch((err) => {
-                console.log(err);
-              });
-        }, 1000);
-      }
-
-      // socket.emit("bidProduct", {
-      //   userInput,
-      //   last_bidder: singleProduct.username.username,
-      //   info,
-      //   duration: singleProduct.duration,
-      //   id: singleProduct._id,
-      // });
-      // setBasePriceError(false);
-      // setCurrentPriceError(false);
-    }
     if (userInput < Number(singleProduct.basePrice)) {
       setBasePriceError(true);
-    } else if (userInput < Number(currentPrice)) {
-      setCurrentPriceError(true);
+      return;
     }
-  };
-
-  useEffect(() => {
-    socket.on("updatedProduct", (data) => {
-      const { currentPrice, lastBidder } = data;
-      setCurrentBidder(lastBidder);
-      setCurrentPrice(currentPrice);
+    if (currentPrice && userInput < Number(currentPrice)) {
+      setCurrentPriceError(true);
+      return;
+    }
+    setBasePriceError(false);
+    setCurrentPriceError(false);
+    socket.emit("bit-paced", {
+      bidder: info,
+      price: userInput,
+      id,
     });
-  }, []);
+  };
 
   const startBid = async (e) => {
     e.preventDefault();
@@ -139,21 +102,35 @@ export default function SingleProduct() {
       });
   }, [bidStarted]);
 
-  // useEffect(() => {
-  //   if (bidStarted)
-  //     socket.on("watch-bid", ({ bidder, price }) => {
-  //       setCurrentBidder(bidder);
-  //       setCurrentPrice(price);
-  //     });
-  // }, [setCurrentBidder, setCurrentPrice, bidStarted]);
-
+  useEffect(() => {
+    const bidInterval = setInterval(async () => {
+      if (bidStarted)
+        axios
+          .get(`http://localhost:8080/api/v1/product/singlePost/${id}`)
+          .then((result) => {
+            setCurrentBidder(result.data?.singleProduct[0]?.lastBidder);
+            setCurrentPrice(result.data?.singleProduct[0]?.currentPrice);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+    }, 1000);
+    setTimeout(() => {
+      clearInterval(bidInterval);
+    }, 120000);
+  }, [bidStarted, id]);
   return (
     <Container style={{ marginTop: "3rem" }}>
       <Row>
         <Col md={6}>
           <img
             src={"http://localhost:8080/" + singleProduct.cover}
-            style={{ height: "100%", width: "100%", marginTop: "1rem" }}
+            style={{
+              height: "25em",
+              width: "25em",
+              marginTop: "1rem",
+              objectFit: "cover",
+            }}
           />
         </Col>
         <Col md={6}>
@@ -170,29 +147,29 @@ export default function SingleProduct() {
             Time Remaining :{" "}
             {remainingTime <= 0 ? "Auction ended" : remainingTime}
           </h6>
-          <h6>Current Price : {currentPrice} </h6>
-          <h6>Current Bidder :{currentBidder} </h6>
+          {remainingTime <= 0 ? (
+            `${singleProduct.productName} goes to ${currentBidder} for Rs${currentPrice}`
+          ) : (
+            <>
+              <h6>Current Price : {currentPrice} </h6>
+              <h6>Current Bidder :{currentBidder} </h6>
+            </>
+          )}
+
           <hr />
           <div style={{ gap: "4px" }}>
             <form>
-              {basePriceError ? (
+              {basePriceError && (
                 <p style={{ color: "red" }}>
                   The bidding amount must be greater than{" "}
                   {singleProduct.basePrice}
                 </p>
-              ) : (
-                ""
               )}
-              {currentPriceError ? (
+              {currentPriceError && (
                 <p style={{ color: "red" }}>
                   The bidding amount must be greater than {currentPrice}
                 </p>
-              ) : (
-                ""
               )}
-
-              {/* {checkPriceError()} */}
-
               {/* <Timer duration={singleProduct?.duration} /> */}
               {user === singleProduct.username?.username ? (
                 <>
