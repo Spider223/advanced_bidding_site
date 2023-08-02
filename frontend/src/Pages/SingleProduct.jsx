@@ -63,21 +63,27 @@ export default function SingleProduct() {
 
   const placeBid = async (e) => {
     e.preventDefault();
+
+    if (
+      userInput > Number(singleProduct.basePrice) &&
+      userInput > Number(currentPrice)
+    ) {
+      socket.emit("bit-paced", {
+        bidder: info,
+        price: userInput,
+        id,
+      });
+    }
     if (userInput < Number(singleProduct.basePrice)) {
       setBasePriceError(true);
-      return;
+    } else {
+      setBasePriceError(false);
     }
-    if (currentPrice && userInput < Number(currentPrice)) {
+    if (userInput < Number(currentPrice)) {
       setCurrentPriceError(true);
-      return;
+    } else {
+      setCurrentPriceError(false);
     }
-    setBasePriceError(false);
-    setCurrentPriceError(false);
-    socket.emit("bit-paced", {
-      bidder: info,
-      price: userInput,
-      id,
-    });
   };
 
   const startBid = async (e) => {
@@ -167,7 +173,7 @@ export default function SingleProduct() {
               )}
               {currentPriceError && (
                 <p style={{ color: "red" }}>
-                  The bidding amount must be greater than {currentPrice}
+                  The bidding amount must be greaters than {currentPrice}
                 </p>
               )}
               {/* <Timer duration={singleProduct?.duration} /> */}
@@ -201,6 +207,15 @@ export default function SingleProduct() {
                       </button>
                     </>
                   )}
+                  {/* <input
+                    placeholder="$"
+                    type="number"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                  />
+                  <button type="submit" onClick={(e) => placeBid(e)}>
+                    Place bid
+                  </button> */}
                 </>
               )}
             </form>

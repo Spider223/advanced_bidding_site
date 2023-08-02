@@ -58,8 +58,10 @@ export default function AddProduct() {
       const response = await axios.post(
         "http://localhost:8080/api/v1/product/addProduct",
         formData,
+
         authorization
       );
+      console.log(response);
       window.location.href = "/";
       socket.emit("addProduct", {
         result: response.data,

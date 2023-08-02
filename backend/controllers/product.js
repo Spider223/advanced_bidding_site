@@ -18,14 +18,13 @@ const addProduct = async (req, res) => {
     username: req.user.id,
     cover: cover,
   };
-
   const newCreatePost = new Product(createPost);
 
   newCreatePost
     .save()
     .then((result) => {
       socketServer.emit("Product Created:");
-      res.json(result);
+      res.json(newCreatePost);
     })
     .catch((err) => {
       res.status(400).json("Error: " + err);

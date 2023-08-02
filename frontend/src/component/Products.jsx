@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Card, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
@@ -10,7 +9,7 @@ export default function Products({ productName, cover, description, _id }) {
         <Card.Img
           variant="top"
           src={"http://localhost:8080/" + cover}
-          style={{ height: "25em", objectFit: "cover" }}
+          style={{ height: "20em", objectFit: "cover" }}
         />
         <Card.Body>
           <Card.Title>{productName}</Card.Title>

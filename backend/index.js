@@ -34,6 +34,10 @@ socketIO.on("connection", (socket) => {
   socket.on("addProduct", (data) => {
     socketIO.emit("addProductResponse", data);
   });
+  //  socket.on("bit-paced", ({bidder, price}) => {
+  //   socketIO.emit("watch-bid", {bidder, price});
+  // });
+
   socket.on("bit-paced", ({ bidder, price, id }) => {
     Product.findByIdAndUpdate(
       { _id: id },
@@ -41,7 +45,6 @@ socketIO.on("connection", (socket) => {
       { new: true }
     )
       .then((data) => {
-        console.log(data);
         if (data)
           socket.emit("bit-placed", {
             bidder: data.lastBidder,
